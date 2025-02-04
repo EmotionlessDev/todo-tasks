@@ -19,8 +19,8 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Docker compose build
-        run: docker compose -f .docker/dev/docker-compose.dev.yml build
+        run: docker compose -f .docker/docker-compose.dev.yml build
 
       - name: Docker compose up
-        run: docker compose -f .docker/dev/docker-compose.dev.yml up -d
+        run: docker compose -f .docker/docker-compose.dev.yml up -d
 
