@@ -1,0 +1,29 @@
+services:
+  api:
+    container_name: api
+    build:
+      context: ./../
+      dockerfile: .docker/dev/Dockerfile
+    ports:
+      - "4000:4000"
+    depends_on:
+      database:
+        condition: service_healthy
+  database:
+    container_name: database 
+    image: postgres:14.0-alpine
+    volumes:
+      - v-database:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    env_file:
+      - ./dev/conf/.env.dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+volumes:
+  v-database:
