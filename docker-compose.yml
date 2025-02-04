@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  database:
+    container_name: database
+    image: postgres:14
+
+
+volumes:
+  v-database:
