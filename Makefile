@@ -16,4 +16,4 @@ clean:
 	docker compose down --volumes
 
 migrate-up:
-	migrate -path=./migrations -database "${TASKS_POSTGRES_DSN}" up
+	migrate -path=./migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable" up
