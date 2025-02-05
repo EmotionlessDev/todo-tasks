@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/EmotionlessDev/todo-tasks/internal/data"
 	_ "github.com/lib/pq"
 )
 
@@ -26,6 +27,7 @@ type config struct {
 type application struct {
 	logger *slog.Logger
 	config config
+	models data.Models
 }
 
 func main() {
@@ -56,6 +58,7 @@ func main() {
 	app := &application{
 		logger: logger,
 		config: cfg,
+		models: data.NewModels(db),
 	}
 
 	// Add log and start the server with the servemux as the root handler
