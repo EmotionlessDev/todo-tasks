@@ -1,7 +1,6 @@
 name: code-quality
 
-on:
-  pull_request
+on: pull_request
 
 jobs:
   golangci:
@@ -14,7 +13,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version-file: './go.mod'
+          go-version-file: "./go.mod"
           cache: true
 
       - name: Run golangci-lint
