@@ -1,16 +1,48 @@
 package main
 
-import "net/http"
+import (
+	"log/slog"
+	"net/http"
+)
 
-func (app *application) serverError(w http.ResponseWriter, err error) {
-	app.errorLog.Println(err.Error())
-	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+func (app *application) logError(r *http.Request, err error) {
+	app.logger.Error("Request error",
+		slog.String("method", r.Method),
+		slog.String("url", r.URL.String()),
+		slog.String("remote_addr", r.RemoteAddr),
+		slog.Any("error", err),
+	)
 }
 
-func (app *application) clientError(w http.ResponseWriter, status int) {
-	http.Error(w, http.StatusText(status), status)
+func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message interface{}) {
+	env := envelope{"error": message}
+	err := app.writeJSON(w, status, env, nil)
+	if err != nil {
+		app.logError(r, err)
+		w.WriteHeader(500)
+	}
 }
 
-func (app *application) notFound(w http.ResponseWriter) {
-	app.clientError(w, http.StatusNotFound)
+func (app *application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.logError(r, err)
+	message := "the server encountered a problem and could not process your request"
+	app.errorResponse(w, r, http.StatusInternalServerError, message)
 }
+
+func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
+	message := "the requested resource could not be found"
+	app.errorResponse(w, r, http.StatusNotFound, message)
+}
+
+// func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
+// 	message := "the requested HTTP method is not supported by this resource"
+// 	app.errorResponse(w, r, http.StatusMethodNotAllowed, message)
+// }
+//
+// func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+// 	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+// }
+//
+// func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+// 	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
+// }
