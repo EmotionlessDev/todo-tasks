@@ -13,6 +13,7 @@ type Task struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	Completed   bool      `json:"completed"`
+	ListID      int       `json:"list_id"`
 }
 
 type TaskModel struct {
