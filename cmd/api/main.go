@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -13,16 +13,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const version = "1.0.0"
+
 type config struct {
 	port string
+	env  string
 	db   struct {
 		dsn string
 	}
 }
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
+	logger *slog.Logger
+	config config
 }
 
 func main() {
@@ -30,36 +33,43 @@ func main() {
 
 	// Parse the command-line flags
 	flag.StringVar(&cfg.port, "port", ":4000", "HTTP network address")
+	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 	flag.StringVar(&cfg.db.dsn, "dsn", os.Getenv("TASKS_POSTGRES_DSN"), "Postgres connection DSN")
+
 	flag.Parse()
 
 	fmt.Println(cfg.db.dsn)
-	// Create custom loggers
-	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	// Init logger
+	handler := slog.NewTextHandler(os.Stderr, nil)
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+	errorLog := slog.NewLogLogger(handler, slog.LevelError)
 
 	// Init the database connection pool
 	db, err := openDB(cfg)
 	if err != nil {
-		errorLog.Fatal(err)
+		logger.Error("Failed to connect to database", "error", err)
 	}
 	defer db.Close()
 
 	// Initialize a new instance of application containing the dependencies
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
+		logger: logger,
+		config: cfg,
 	}
 
 	// Add log and start the server with the servemux as the root handler
-	infoLog.Printf("Starting server on %s", cfg.port)
+	logger.Info("Starting server on %s", slog.String("port", cfg.port))
 	srv := &http.Server{
 		Addr:     cfg.port,
 		ErrorLog: errorLog,
 		Handler:  app.routes(),
 	}
 	err = srv.ListenAndServe()
-	errorLog.Fatal(err)
+	if err != nil {
+		logger.Error("Failed to start server", slog.Any("error", err))
+	}
+
 }
 
 func openDB(cfg config) (*sql.DB, error) {
