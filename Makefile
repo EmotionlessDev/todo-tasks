@@ -1,11 +1,11 @@
 up-dev:
-	docker compose -f .docker/docker-compose.dev.yml up -d
+	docker compose up -d
 
 build-dev:
-	docker compose -f .docker/docker-compose.dev.yml build
+	docker compose build
 
 down-dev:
-	docker compose -f .docker/docker-compose.dev.yml down
+	docker compose down
 
 clean-dev:
-	docker compose -f .docker/docker-compose.dev.yml down --volumes
+	docker compose down --volumes
