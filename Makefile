@@ -1,11 +1,11 @@
-up-dev:
+up:
 	docker compose up -d
 
-build-dev:
+build:
 	docker compose build
 
-down-dev:
+down:
 	docker compose down
 
-clean-dev:
+clean:
 	docker compose down --volumes
