@@ -3,8 +3,14 @@ include .env
 up:
 	docker compose up -d
 
+up-build:
+	docker compose up -d --build
+
 up-log:
 	docker compose up
+
+up-log-build:
+	docker compose up --build
 
 build:
 	docker compose build
